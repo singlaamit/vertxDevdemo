@@ -9,20 +9,30 @@
 
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <style>
+        .row{
+            padding: 10px !important;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
     <div class="row">
+        <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
+        <h1>Add New User</h1>
+        </div>
+    </div>
+    <div class="row">
 
-        <form action="/abc" method="post" enctype="multipart/form-data">
+        <form action="/mongoget" method="post" enctype="multipart/form-data">
             <div class="row">
                 <div class="col-md-6 col-lg-6 col-sm-6 col-xs-6">
-                <input type="text" name="firstname" class="form-control" placeholder="name">
+                    <input type="text" name="name" class="form-control" placeholder="name">
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-6 col-lg-6 col-sm-6 col-xs-6">
-                 <input type="text" name="phone" class="form-control" placeholder="phone">
+                    <input type="text" name="phone" class="form-control" placeholder="phone">
                 </div>
             </div>
             <div class="row">
@@ -32,17 +42,17 @@
             </div>
             <div class="row">
                 <div class="col-md-6 col-lg-6 col-sm-6 col-xs-6">
-                  <input type="text" name="question" class="form-control" placeholder="question">
+                    <input type="text" name="question" class="form-control" placeholder="question">
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-6 col-lg-6 col-sm-6 col-xs-6">
-                 <input type="file" name="fileToUpload" id="fileToUpload" multiple placeholder="Choose a file">
+                    <input type="file" name="fileToUpload" id="fileToUpload" multiple placeholder="Choose a file">
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-6 col-lg-6 col-sm-6 col-xs-6">
-                     <input type="submit" value="Submit" class="btn btn-success">
+                    <input type="submit" value="Submit" class="btn btn-success">
                 </div>
             </div>
         </form>
