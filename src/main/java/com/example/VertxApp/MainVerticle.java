@@ -32,11 +32,11 @@ import java.nio.file.Files;
 
 import com.example.VertxApp.EventBusSenderVerticle;
 
-import com.xuggle.mediatool.MediaToolAdapter;
-import com.xuggle.mediatool.event.IVideoPictureEvent;
-import com.xuggle.mediatool.event.VideoPictureEvent;
-import com.xuggle.xuggler.IVideoPicture;
-import com.xuggle.xuggler.IVideoResampler;
+// import com.xuggle.mediatool.MediaToolAdapter;
+// import com.xuggle.mediatool.event.IVideoPictureEvent;
+// import com.xuggle.mediatool.event.VideoPictureEvent;
+// import com.xuggle.xuggler.IVideoPicture;
+// import com.xuggle.xuggler.IVideoResampler;
 
 public class MainVerticle extends AbstractVerticle {
 
