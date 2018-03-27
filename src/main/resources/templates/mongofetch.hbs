@@ -29,6 +29,7 @@
             <th>email</th>
             <th>phone</th>
             <th>question</th>
+            <th>Image</th>
             <th>action</th>
         </tr>
     {{#each data}}
@@ -37,6 +38,7 @@
             <td contenteditable="true" data-value="{{email}}" data-id="{{_id}}" id="email{{_id}}">{{email}}</td>
             <td contenteditable="true" data-value="{{phone}}" data-id="{{_id}}" id="phone{{_id}}">{{phone}}</td>
             <td contenteditable="true" data-value="{{phone}}" data-id="{{_id}}" id="question{{_id}}">{{question}}</td>
+            <td contenteditable="true" data-value="{{phone}}" data-id="{{_id}}" id="question{{_id}}"><img src="data:image;base64,{{encodedImage}}" width="200" height="200"></td>
             <td>
                 <a id="delete" data-value="{{_id}}" class="btn btn-danger">delete</a>
                 <a id="update" data-value="{{_id}}" style="margin-left: 10px" class="btn btn-default" >update</a>

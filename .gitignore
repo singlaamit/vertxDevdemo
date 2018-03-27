@@ -161,4 +161,9 @@ nbdist/
 !.vscode/launch.json
 !.vscode/extensions.json
 
+
+build
+out
+.gradle
+.idea
 # End of https://www.gitignore.io/api/macos,maven,eclipse,netbeans,intellij+iml,visualstudiocode
