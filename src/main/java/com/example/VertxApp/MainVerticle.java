@@ -47,19 +47,37 @@ public class MainVerticle extends AbstractVerticle {
     HandlebarsTemplateEngine engine;
     SQLConnection connection;
     String encodedImage = "";
+    SQLClient mySQLClient;
+
+    private void setupDBConnection() {
+        final JsonObject mySQLClientConfig = new JsonObject()
+            .put("host", "202.164.57.235")
+            .put("username", "apnikheti")
+            .put("password", "ApSQL1@34")
+            .put("database", "apnikheti_app")
+            .put("charset", "utf8");
+        mySQLClient = MySQLClient.createShared(vertx, mySQLClientConfig);
+        mySQLClient.getConnection(res -> {
+            if (res.succeeded()){
+                connection = res.result();
+            } else {
+                System.out.println("Unable to get a connection to the DB" + res.cause());
+            }
+        });
+    }
 
     @Override
-
     public void start() throws Exception {
 
         final String renditionDestination = System.getenv("RENDITION_HOME");
         DeploymentOptions options=new DeploymentOptions().setWorker(true).setWorkerPoolSize(100);
+        setupDBConnection();
         vertx.deployVerticle(EventBusReceiverMobileVerticle.class.getName(),options, hand->{
-           if(hand.succeeded()){
-               System.out.print("Successfully deployed receiver");
-           }else{
-               System.out.print(hand.cause());
-           }
+            if(hand.succeeded()){
+                System.out.print("Successfully deployed receiver");
+            }else{
+                System.out.print(hand.cause());
+            }
         });
 
         vertx.deployVerticle(EventBusReceiverDesktopVerticle.class.getName(),options, hand->{
@@ -140,56 +158,36 @@ public class MainVerticle extends AbstractVerticle {
         });
 
         router.get("/getAllQA").produces("application/json").handler(ctx -> {
-                JsonObject mySQLClientConfig = new JsonObject()
-                    .put("host", "202.164.57.235")
-                    .put("username", "apnikheti")
-                    .put("password", "ApSQL1@34")
-                    .put("database", "apnikheti_app")
-                    .put("charset", "utf8");
-                final HttpServerResponse response = ctx.response();
-                SQLClient mySQLClient = MySQLClient.createShared(vertx, mySQLClientConfig);
-                mySQLClient.getConnection(res -> {
-                    if (res.succeeded()) {
-                        connection = res.result();
-                        connection.query("select * from tbl_vertx_demo", qry -> {
-                            if (qry.succeeded()) {
-                                ResultSet rs = qry.result();
-                                System.out.println(Json.encode(rs.getRows()));
-                                response.putHeader("Content-type", "application/json").end(Json.encode(rs.getRows()));
-                            } else {
-                                ctx.response().end(qry.cause().toString());
-                            }
-                        });
-                    }
-                });
+
+            final HttpServerResponse response = ctx.response();
+            connection.query("select * from tbl_vertx_demo", qry -> {
+                if (qry.succeeded()) {
+                    ResultSet rs = qry.result();
+                    System.out.println(Json.encode(rs.getRows()));
+                    response.putHeader("Content-type", "application/json").end(Json.encode(rs.getRows()));
+                } else {
+                    ctx.response().end(qry.cause().toString());
+                }
             });
+
+        });
 
 
         router.get("/getQA").produces("application/json").handler(ctx -> {
             System.out.println("Into getQA");
-            JsonObject mySQLClientConfig = new JsonObject()
-                .put("host", "202.164.57.235")
-                .put("username", "apnikheti")
-                .put("password", "ApSQL1@34")
-                .put("database", "apnikheti_app")
-                .put("charset", "utf8");
             final HttpServerResponse response=ctx.response();
             int id=Integer.parseInt(ctx.request().getParam("id"));
-            SQLClient mySQLClient = MySQLClient.createShared(vertx, mySQLClientConfig);
-            mySQLClient.getConnection(res -> {
-                if (res.succeeded()) {
-                    connection = res.result();
-                    connection.query("select * from tbl_vertx_demo where id="+id, qry -> {
-                        if (qry.succeeded()) {
-                            ResultSet rs = qry.result();
-                            System.out.println(Json.encode(rs.getRows()));
-                            response.putHeader("Content-type","application/json").end(Json.encode(rs.getRows()));
-                        }else{
-                            ctx.response().end(qry.cause().toString());
-                        }
-                    });
+
+            connection.query("select * from tbl_vertx_demo where id="+id, qry -> {
+                if (qry.succeeded()) {
+                    ResultSet rs = qry.result();
+                    System.out.println(Json.encode(rs.getRows()));
+                    response.putHeader("Content-type","application/json").end(Json.encode(rs.getRows()));
+                }else{
+                    ctx.response().end(qry.cause().toString());
                 }
             });
+
         });
 
         router.post("/abc").handler(ctx -> {
@@ -301,22 +299,22 @@ public class MainVerticle extends AbstractVerticle {
             try {
                 if (fu.fileName().contains("jpg") || fu.fileName().contains("png") || fu.fileName().contains("jpeg"))
                 {
-                        File input = new File(fu.uploadedFileName());
-                        BufferedImage image = ImageIO.read(input);
+                    File input = new File(fu.uploadedFileName());
+                    BufferedImage image = ImageIO.read(input);
 
-                        vertx.eventBus().send("mobile", new ResizeImageOperation(fu.fileName(), image));
+                    vertx.eventBus().send("mobile", new ResizeImageOperation(fu.fileName(), image));
 
-                        vertx.eventBus().send("desktop", new ResizeImageOperation(fu.fileName(), image));
+                    vertx.eventBus().send("desktop", new ResizeImageOperation(fu.fileName(), image));
 
-                        vertx.eventBus().send("tablet", new ResizeImageOperation(fu.fileName(), image));
+                    vertx.eventBus().send("tablet", new ResizeImageOperation(fu.fileName(), image));
 
-                        String FileName=fu.uploadedFileName();
+                    String FileName=fu.uploadedFileName();
 
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        ImageIO.write(image, "png", baos);
-                        byte[] res = baos.toByteArray();
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ImageIO.write(image, "png", baos);
+                    byte[] res = baos.toByteArray();
 
-                        encodedImage = Base64.encode(baos.toByteArray());
+                    encodedImage = Base64.encode(baos.toByteArray());
                 }
                 else if (fu.fileName().contains("mp3"))
                 {
@@ -331,7 +329,7 @@ public class MainVerticle extends AbstractVerticle {
                 }
                 else
                 {
-                   JsonObject data=new JsonObject().put("upload",fu.uploadedFileName()).put("output",fu.fileName());
+                    JsonObject data=new JsonObject().put("upload",fu.uploadedFileName()).put("output",fu.fileName());
                     vertx.eventBus().send   ("video", Json.encode(data), handler->{
                         if(handler.succeeded()){
                             System.out.println("Done");
@@ -387,108 +385,48 @@ public class MainVerticle extends AbstractVerticle {
                 video = new File(fu.fileName()).getName();
             }
         }
-        JsonObject mySQLClientConfig = new JsonObject()
-            .put("host", "****")
-            .put("username", "****")
-            .put("password", "****")
-            .put("database", "****")
-            .put("charset", "utf8");
-
-        SQLClient mySQLClient = MySQLClient.createShared(vertx, mySQLClientConfig);
 
         String finalImage = image;
         String finalAudio = audio;
         String finalVideo = video;
 
-        mySQLClient.getConnection(res -> {
-
-            if (res.succeeded()) {
-                connection = res.result();
-
-                connection.update("insert into tbl_vertx_demo (name,email,phone,question,image,audio,video) values ('" + name + "', '" + email + "','" + phone + "','" + question + "','" + finalImage + "','"+finalAudio+"','"+finalVideo+"')", r -> {
-                    if (r.succeeded()) {
-                        int id=r.result().getKeys().getInteger(0);
-                        System.out.println("Into insert code block");
-                    }else{
-                        ctx.response().end(r.cause().toString());
-                    }
-                });
+        connection.update("insert into tbl_vertx_demo " +
+            "(name,email,phone,question,image,audio,video) values ('"
+            + name + "', '" + email + "','" + phone + "','" + question + "','"
+            + finalImage + "','"+finalAudio+"','"+finalVideo+"')", r -> {
+            if (r.succeeded()) {
+                int id=r.result().getKeys().getInteger(0);
+                System.out.println("Into insert code block");
+            }else{
+                ctx.response().end(r.cause().toString());
             }
         });
+
     }
 
 
-    private void saveInDatabase(RoutingContext ctx, HttpServerResponse response, String name, String phone, String email, String
-        question, String imageFile) {
-
-        JsonObject mySQLClientConfig = new JsonObject()
-
-            .put("host", "*")
-
-            .put("username", "*")
-
-            .put("password", "*")
-
-            .put("database", "*")
-
-            .put("charset", "*");
-
-        SQLClient mySQLClient = MySQLClient.createShared(vertx, mySQLClientConfig);
-
-
-        mySQLClient.getConnection(res -> {
-
-            if (res.succeeded()) {
-
-
-                connection = res.result();
-
-
-                connection.execute("insert into tbl_vertx_demo (name,email,phone,question,image) values ('" + name + "', '" + email + "','" + phone + "','" + question + "','" + imageFile + "')", r -> {
-
-                    if (r.succeeded()) {
-
-                        connection.query("select name,email,phone,question,image from tbl_vertx_demo", show -> {
-
-
-                            ResultSet rs = new ResultSet();
-
-                            rs = show.result();
-
-                            ctx.put("data", rs.getResults());
-
-                            engine.render(ctx, "templates/index.hbs", rad -> {
-
-                                if (rad.succeeded()) {
-
-                                    ctx.response().end(rad.result());
-
-                                } else {
-
-                                    ctx.fail(rad.cause());
-
-                                }
-
-                            });
-
-                        });
-
-                    } else {
-
-                        response.end();
-
-                    }
-
+    private void saveInDatabase(RoutingContext ctx, HttpServerResponse response, String name, String phone, String email,
+                                String question, String imageFile) {
+        connection.execute("insert into tbl_vertx_demo " +
+            "(name,email,phone,question,image) values ('" +
+            name + "', '" + email + "','" + phone + "','" +
+            question + "','" + imageFile + "')", r -> {
+            if (r.succeeded()) {
+                connection.query("select name,email,phone,question,image from tbl_vertx_demo", show -> {
+                    ResultSet rs = new ResultSet();
+                    rs = show.result();
+                    ctx.put("data", rs.getResults());
+                    engine.render(ctx, "templates/index.hbs", rad -> {
+                        if (rad.succeeded()) {
+                            ctx.response().end(rad.result());
+                        } else {
+                            ctx.fail(rad.cause());
+                        }
+                    });
                 });
-
-
             } else {
-
-
+                response.end();
             }
-
         });
-
-
     }
 }
