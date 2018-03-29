@@ -139,6 +139,58 @@ public class MainVerticle extends AbstractVerticle {
             });
         });
 
+        router.get("/getAllQA").produces("application/json").handler(ctx -> {
+                JsonObject mySQLClientConfig = new JsonObject()
+                    .put("host", "202.164.57.235")
+                    .put("username", "apnikheti")
+                    .put("password", "ApSQL1@34")
+                    .put("database", "apnikheti_app")
+                    .put("charset", "utf8");
+                final HttpServerResponse response = ctx.response();
+                SQLClient mySQLClient = MySQLClient.createShared(vertx, mySQLClientConfig);
+                mySQLClient.getConnection(res -> {
+                    if (res.succeeded()) {
+                        connection = res.result();
+                        connection.query("select * from tbl_vertx_demo", qry -> {
+                            if (qry.succeeded()) {
+                                ResultSet rs = qry.result();
+                                System.out.println(Json.encode(rs.getRows()));
+                                response.putHeader("Content-type", "application/json").end(Json.encode(rs.getRows()));
+                            } else {
+                                ctx.response().end(qry.cause().toString());
+                            }
+                        });
+                    }
+                });
+            });
+
+
+        router.get("/getQA").produces("application/json").handler(ctx -> {
+            System.out.println("Into getQA");
+            JsonObject mySQLClientConfig = new JsonObject()
+                .put("host", "202.164.57.235")
+                .put("username", "apnikheti")
+                .put("password", "ApSQL1@34")
+                .put("database", "apnikheti_app")
+                .put("charset", "utf8");
+            final HttpServerResponse response=ctx.response();
+            int id=Integer.parseInt(ctx.request().getParam("id"));
+            SQLClient mySQLClient = MySQLClient.createShared(vertx, mySQLClientConfig);
+            mySQLClient.getConnection(res -> {
+                if (res.succeeded()) {
+                    connection = res.result();
+                    connection.query("select * from tbl_vertx_demo where id="+id, qry -> {
+                        if (qry.succeeded()) {
+                            ResultSet rs = qry.result();
+                            System.out.println(Json.encode(rs.getRows()));
+                            response.putHeader("Content-type","application/json").end(Json.encode(rs.getRows()));
+                        }else{
+                            ctx.response().end(qry.cause().toString());
+                        }
+                    });
+                }
+            });
+        });
 
         router.post("/abc").handler(ctx -> {
             HttpServerRequest hr = ctx.request();
